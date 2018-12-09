@@ -1,0 +1,4 @@
+﻿  up.cpp
+c:\users\smitty\documents\github\labrat\up\up\up.cpp(101): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\smitty\documents\github\labrat\up\up\up.cpp(241): warning C4715: 'WinMain': not all control paths return a value
+  up.vcxproj -> C:\Users\smitty\Documents\GitHub\labrat\up\Debug\up.exe
