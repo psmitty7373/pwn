@@ -1,3 +1,0 @@
-#!/home/smitty/nwt/c2/bin/python3
-import ldapdomaindump
-ldapdomaindump.main()
