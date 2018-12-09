@@ -1,0 +1,3 @@
+#!/home/smitty/nwt/c2/bin/python3
+from ldapdomaindump import convert
+convert.ldd2bloodhound()
