@@ -1,0 +1,5 @@
+﻿  up_dll.cpp
+c:\users\smitty\documents\github\nwt\c2\up_dll\up_dll\up_dll.cpp(184): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\smitty\documents\github\nwt\c2\up_dll\up_dll\up_dll.cpp(194): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\smitty\documents\github\nwt\c2\up_dll\up_dll\up_dll.cpp(228): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  up_dll.vcxproj -> C:\Users\smitty\Documents\GitHub\nwt\c2\up_dll\x64\Debug\up_dll.dll
