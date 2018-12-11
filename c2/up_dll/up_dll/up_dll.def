@@ -1,4 +1,0 @@
-LIBRARY up_dll
-EXPORTS
-	install @1
-	nothing @2

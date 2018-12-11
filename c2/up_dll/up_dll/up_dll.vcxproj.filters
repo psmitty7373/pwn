@@ -27,9 +27,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="up_dll.def">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
 </Project>
