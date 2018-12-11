@@ -13,6 +13,7 @@ def crypt(m):
 
 def main():
     print "Starting..."
+    print "Waiting for connection."
     orig_fl = fcntl.fcntl(sys.stdin, fcntl.F_GETFL)
     fcntl.fcntl(sys.stdin, fcntl.F_SETFL, orig_fl | os.O_NONBLOCK)
 
@@ -20,15 +21,27 @@ def main():
     sock.bind((UDP_IP, UDP_PORT))
 
     addr = None
+    connected = False
+    lastconnect = time.time()
 
     while True:
+        if connected and time.time() - lastconnect > 20:
+            print "Connection lost?"
+            connected = False
         if select.select([sys.stdin], [], [], 0.0)[0]:
             data = sys.stdin.read().strip()
             if addr:
                 sock.sendto(crypt(data) + '\n', addr)
         if select.select([sock], [], [], 0.0)[0]:
             data, addr = sock.recvfrom(65535)
-            print crypt(data).replace("<<CRLCHK>>",""),
+            if not connected:
+                print "Connection from:", addr
+                connected = True
+            lastconnect = time.time()
+            connected = True
+            resp = crypt(data).replace("<<CRLCHK>>","")
+            if len(resp) > 0:
+                print resp
         time.sleep(0.5)
 
 if __name__ == "__main__":
