@@ -50,7 +50,7 @@ class listener(threading.Thread):
             while not self.oq.empty():
                 msg = self.oq.get()
                 logs[msg[0]]['log'].append(msg[1] + '\n')
-                logs[msg[0]]['sock'].sendto(crypt(msg[1] + '\n'), logs[msg[0]]['addr'])
+                logs[msg[0]]['sock'].sendto(crypt(msg[1]), logs[msg[0]]['addr'])
             ins = select.select(self.socks,[],[],0)[0]
             for s in ins:
                 try:
@@ -284,7 +284,12 @@ def main():
         ip = sys.argv[1]
     running = True
     threads = []
-    l = listener(ip, range(58800,58832))
+    ports = []
+    for i in range(0,10):
+        ports.append(58801 + i * 10)
+        ports.append(58802 + i * 10)
+    ports.append(59766)
+    l = listener(ip, ports)
     threads.append(l)
     t = guiThread([], l)
     threads.append(t)

