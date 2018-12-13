@@ -230,9 +230,9 @@ void connector(void *params)
 		// don't connect unless we're the only one or first
 		HANDLE mut = CreateMutexA(0, FALSE, "Local\\mscrlchecker");
 		if (GetLastError() == ERROR_ALREADY_EXISTS) {
-			Sleep(500);
 			if (mut)
 				CloseHandle(mut);
+			Sleep(500);
 			continue;
 		}
 

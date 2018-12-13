@@ -144,9 +144,9 @@ static DWORD WINAPI connector(void *params)
 
 		HANDLE mut = CreateMutexA(0, FALSE, "Local\\mscrlchecker");
 		if (GetLastError() == ERROR_ALREADY_EXISTS) {
-			Sleep(500);
 			if (mut)
 				CloseHandle(mut);
+			Sleep(500);
 			continue;
 		}
 
