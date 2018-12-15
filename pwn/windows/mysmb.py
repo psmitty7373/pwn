@@ -147,15 +147,15 @@ class MYSMB(smb.SMB):
 		smb.SMB.neg_session(self, extended_security=self.__use_ntlmv2, negPacket=negPacket)
 
 	# to use any login method, SMB must not be used from multiple thread
-	def login(self, user, password, domain='', lmhash='', nthash='', ntlm_fallback=True, maxBufferSize=None):
+	def login(self, user, password='', domain='', lmhash='', nthash='', ntlm_fallback=True, maxBufferSize=None):
 		_setup_login_packet_hook(maxBufferSize)
 		smb.SMB.login(self, user, password, domain, lmhash, nthash, ntlm_fallback)
 
-	def login_standard(self, user, password, domain='', lmhash='', nthash='', maxBufferSize=None):
+	def login_standard(self, user, password='', domain='', lmhash='', nthash='', maxBufferSize=None):
 		_setup_login_packet_hook(maxBufferSize)
 		smb.SMB.login_standard(self, user, password, domain, lmhash, nthash)
 
-	def login_extended(self, user, password, domain='', lmhash='', nthash='', use_ntlmv2=True, maxBufferSize=None):
+	def login_extended(self, user, password='', domain='', lmhash='', nthash='', use_ntlmv2=True, maxBufferSize=None):
 		_setup_login_packet_hook(maxBufferSize)
 		smb.SMB.login_extended(self, user, password, domain, lmhash, nthash, use_ntlmv2)
 

