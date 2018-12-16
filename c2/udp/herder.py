@@ -27,27 +27,20 @@ class listener(threading.Thread):
 
     def openSocket(self):
         for p in self.ports:
-            sock_open = False
-            while not sock_open:
-                if not self.running:
-                    break
-                try:
-                    q.put('[*] Attempting to open socket on: ' + self.ip + ':' + str(p) + '\n')
-                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    s.setblocking(0)
-                    s.bind((self.ip, p))
-                    sock_open = True
-                    self.socks.append(s)
-                except:
-                    q.put('[*] Unable to open socket on: ' + i + ':443\n')
-                    time.sleep(2)
+            if not self.running:
+                break
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.setblocking(0)
+                s.bind((self.ip, p))
+                self.socks.append(s)
+            except:
+                q.put('[*] Unable to open socket on: ' + i + ':443\n')
         q.put('[*] Sockets opened.\n')
         return True
 
     def run(self):
-        if not self.openSocket():
-            time.sleep(5)
-            self.running = False
+        self.openSocket()
         while self.running:
             while not self.oq.empty():
                 msg = self.oq.get()
@@ -60,12 +53,14 @@ class listener(threading.Thread):
                     data = crypt(data).replace('<<CRLCHK>>','')
 
                     if not addr[0] in logs.keys():
-                        q.put('[*] Connection from: ' + str(addr[0]) + '  ' + time.ctime() + '\n')
+                        q.put('[*] Connection from: ' + str(addr) + ' ' + time.ctime() + '\n')
                         logs[addr[0]] = {'sock': s, 'addr': addr, 'lastseen': time.time(), 'log': [], 'cmdhist': [''], 'prompt': '>'}
+                        logs[addr[0]]['port'] = s.getsockname()[1];
                     else:
                         logs[addr[0]]['sock'] = s
                         logs[addr[0]]['addr'] = addr
                         logs[addr[0]]['lastseen'] = time.time()
+                        logs[addr[0]]['port'] = s.getsockname()[1];
                         logs[addr[0]]['log'].append(data)
 
                 except:
@@ -106,7 +101,7 @@ class guiThread(threading.Thread):
             try:
                 if not self.tabfocus in logs.keys():
                     self.tabfocus = 'MAIN'
-                if not q.empty():
+                while not q.empty():
                     msg = q.get()
                     logs['MAIN']['log'].append(msg)
 
@@ -193,7 +188,7 @@ class guiThread(threading.Thread):
                                 self.loghistpos = len(''.join(logs[self.tabfocus]['log']).split('\n')) - self.lastay
                         if self.loghistpos < 0:
                             self.loghistpos = 0
-                time.sleep(0.01)
+                time.sleep(0.1)
             except select.error, e:
                 sys.stderr.write(error + '\n')
         curses.endwin()
@@ -218,8 +213,8 @@ class guiThread(threading.Thread):
             self.win3 = curses.newpad(ay,ax)
         else:
             self.win3 = curses.newpad(1,ax)
-        self.win4 = curses.newwin(3,ax-20,ay-3,0)
-        self.win5 = curses.newwin(3,0,ay-3,ax-19)
+        self.win4 = curses.newwin(3,ax-28,ay-3,0)
+        self.win5 = curses.newwin(3,0,ay-3,ax-28)
         self.win1.box()
         self.win2.box()
         self.win4.box()
@@ -251,7 +246,7 @@ class guiThread(threading.Thread):
             t_log = ''.join(logs[self.tabfocus]['log']).replace('\r\n','\n').splitlines(True)
             t_log = t_log[:len(t_log)-self.loghistpos]
             f_log = []
-            self.win5.addstr(1,1, time.strftime('%d-%m-%y %H:%M:%S', time.localtime(logs[self.tabfocus]['lastseen'])))
+            self.win5.addstr(1,1, str(logs[self.tabfocus]['port']) + ' // ' + time.strftime('%d-%m-%y %H:%M:%S', time.localtime(logs[self.tabfocus]['lastseen'])))
             for line in t_log:
                 f_log += [line[i:i+ax] for i in range(0, len(line), ax)]
             if len(f_log) > 0 and ay-11 > 0:
@@ -290,10 +285,11 @@ def main():
     running = True
     threads = []
     ports = []
-    for i in range(0,10):
-        ports.append(58801 + i * 10)
-        ports.append(58802 + i * 10)
-    ports.append(59766)
+#    for i in range(0,10):
+#        ports.append(58801 + i * 10)
+#        ports.append(58802 + i * 10)
+#    ports.append(59766)
+    ports = range(58802,58802+250)
     l = listener(ip, ports)
     threads.append(l)
     t = guiThread([], l)

