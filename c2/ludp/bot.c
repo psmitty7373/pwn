@@ -130,7 +130,7 @@ int main() {
             servaddr.sin_family = AF_INET;
             servaddr.sin_port = htons(58800 + (rand() % 250));
             servaddr.sin_port = htons(58892);
-            inet_aton("10.5.9.9", &servaddr.sin_addr);
+            inet_aton("10.5.2.1", &servaddr.sin_addr);
 
             serverlen = sizeof(servaddr);
 

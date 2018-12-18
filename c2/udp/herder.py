@@ -188,7 +188,7 @@ class guiThread(threading.Thread):
                                 self.loghistpos = len(''.join(logs[self.tabfocus]['log']).split('\n')) - self.lastay
                         if self.loghistpos < 0:
                             self.loghistpos = 0
-                time.sleep(0.1)
+                time.sleep(0.02)
             except select.error, e:
                 sys.stderr.write(error + '\n')
         curses.endwin()
