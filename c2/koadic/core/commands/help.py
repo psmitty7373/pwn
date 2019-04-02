@@ -46,7 +46,7 @@ def help_all(shell):
     shell.print_plain(formats.format("COMMAND", "DESCRIPTION"))
     shell.print_plain(formats.format("---------", "-------------"))
 
-    for key, env in shell.actions.items():
+    for key, env in sorted(shell.actions.items()):
         if getattr(env, "hidden_command", False):
             continue
         shell.print_plain(formats.format(key, env.DESCRIPTION))

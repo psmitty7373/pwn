@@ -285,11 +285,7 @@ def main():
     running = True
     threads = []
     ports = []
-#    for i in range(0,10):
-#        ports.append(58801 + i * 10)
-#        ports.append(58802 + i * 10)
-#    ports.append(59766)
-    ports = range(58802,58802+250)
+    ports = range(58800,58800+500)
     l = listener(ip, ports)
     threads.append(l)
     t = guiThread([], l)

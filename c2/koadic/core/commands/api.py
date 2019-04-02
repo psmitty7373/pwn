@@ -9,7 +9,14 @@ def autocomplete(shell, line, text, state):
     return None
 
 def help(shell):
-    pass
+    shell.print_plain("")
+    shell.print_plain("Turning on the REST Server:")
+    shell.print_plain("api on (--user USERNAME --pass PASSWORD --port PORT)")
+    shell.print_plain("Username and password defaults to 'koadic'. Port defaults to 9990.")
+    shell.print_plain("")
+    shell.print_plain("Turning off the REST Server:")
+    shell.print_plain("api off")
+    shell.print_plain("")
 
 def execute(shell, cmd):
 
@@ -26,7 +33,7 @@ def execute(shell, cmd):
         if "--port" in splitted:
             port = splitted[splitted.index("--port")+1]
         sw = splitted[1].lower()
-        if sw == "1" or sw == "on":
+        if sw == "on":
             if not shell.rest_thread:
                 rest_server = core.rest_server.RestServer(shell, port, username, password)
                 def thread_rest_server():
@@ -53,7 +60,7 @@ def execute(shell, cmd):
 
             else:
                 shell.print_error("Rest server already running")
-        else:
+        elif sw == "off":
             if shell.rest_thread:
                 shell.rest_thread.kill()
                 shell.rest_thread = ""

@@ -4,7 +4,7 @@ import uuid
 
 class ExecCmdJob(core.job.Job):
     def report(self, handler, data, sanitize = False):
-        self.results = self.decode_downloaded_data(data, handler.get_header("encoder", 1252), True).decode("windows-"+handler.get_header("encoder", 1252))
+        self.results = self.decode_downloaded_data(data, self.session.encoder, True).decode("cp"+self.session.shellchcp)
         handler.reply(200)
         self.done()
 
@@ -25,6 +25,8 @@ class ExecCmdImplant(core.implant.Implant):
         self.options.register("CMD", "hostname", "command to run")
         self.options.register("OUTPUT", "true", "retrieve output?", enum=["true", "false"])
         self.options.register("DIRECTORY", "%TEMP%", "writeable directory for output", required=False)
+        self.options.register("FCMD", "", "cmd after escaping", hidden=True)
+        self.options.register("FDIRECTORY", "", "dir after escaping", hidden=True)
         # self.options.register("FILE", "", "random uuid for file name", hidden=True)
 
     def job(self):
@@ -33,8 +35,8 @@ class ExecCmdImplant(core.implant.Implant):
     def run(self):
         # generate new file every time this is run
         # self.options.set("FILE", uuid.uuid4().hex)
-        self.options.set("CMD", self.options.get('CMD').replace("\\", "\\\\").replace('"', '\\"'))
-        self.options.set("DIRECTORY", self.options.get('DIRECTORY').replace("\\", "\\\\").replace('"', '\\"'))
+        self.options.set("FCMD", self.options.get('CMD').replace("\\", "\\\\").replace('"', '\\"'))
+        self.options.set("FDIRECTORY", self.options.get('DIRECTORY').replace("\\", "\\\\").replace('"', '\\"'))
 
         payloads = {}
         #payloads["vbs"] = self.load_script("data/implant/manage/exec_cmd.vbs", self.options)

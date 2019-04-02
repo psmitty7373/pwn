@@ -3,12 +3,12 @@ try
     var readout = ~OUTPUT~;
     if (readout)
     {
-        var output = Koadic.shell.exec("~CMD~", "~DIRECTORY~\\"+Koadic.uuid()+".txt");
+        var output = Koadic.shell.exec("~FCMD~", "~FDIRECTORY~\\"+Koadic.uuid()+".txt");
     }
     else
     {
         var output = "";
-        Koadic.shell.run("~CMD~");
+        Koadic.shell.run("~FCMD~");
         Koadic.work.report();
     }
 

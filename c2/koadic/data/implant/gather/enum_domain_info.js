@@ -40,6 +40,11 @@ function ParseDomainControllers(results)
     var tmp = [];
     for(var i = 0; i < parse2.length; i++)
     {
+        // sometimes a warning message will appear in this section and we need to skip it
+        if(parse2[i].indexOf("WARNING:") != -1)
+        {
+            continue;
+        }
         var dcstring = "";
         tmp = parse2[i].split(" ");
         for(var j = 0; j < tmp.length; j++)

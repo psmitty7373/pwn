@@ -29,10 +29,13 @@ class Shell(object):
         self.rest_thread = ""
         self.continuesession = ""
 
-    def run(self, autorun = []):
+    def run(self, autorun = [], restore_map = {}):
         self.main_thread_id = threading.current_thread().ident
 
         self.print_banner()
+
+        if restore_map:
+            self.restore(restore_map)
 
         while True:
             try:
@@ -201,3 +204,57 @@ class Shell(object):
         except:
             if not os.path.isfile(audio_file):
                 self.print_error('Could not play sound file %s. Check if path to file is correct.' % audio_file)
+
+    def restore(self, restore_map):
+        for key in restore_map['creds']:
+            self.creds[tuple(key.split('/'))] = restore_map['creds'][key]
+
+        for val in restore_map['creds_keys']:
+            self.creds_keys.append(tuple(val.split('/')))
+
+        for key in restore_map['domain_info']:
+            self.domain_info[tuple(key.split('/'))] = restore_map['domain_info'][key]
+
+        class RestoreJob():
+            def __init__(self, shell):
+                self.shell = shell
+
+            def display(self):
+                self.shell.print_plain(self.results)
+
+            def status_string(self):
+                if self.completed == 4:
+                    return "Complete"
+                else:
+                    return "Failed"
+
+        for job in restore_map['jobs']:
+            fs_job = RestoreJob(self)
+            for k,v in job.items():
+                setattr(fs_job, k, v)
+            self.jobs.append(fs_job)
+
+        class RestoreStager():
+            def __init__(self):
+                pass
+
+        class RestoreSession():
+            def __init__(self):
+                pass
+
+            def set_reconnect(self):
+                pass
+
+        fs = RestoreStager()
+        fs.sessions = []
+        fs.payload_id = '-1'
+        for session in restore_map['sessions']:
+            fs_session = RestoreSession()
+            for k,v in session.items():
+                setattr(fs_session, k, v)
+            fs_session.stager = fs
+
+            fs.sessions.append(fs_session)
+
+        self.stagers.append(fs)
+

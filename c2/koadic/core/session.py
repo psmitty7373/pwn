@@ -33,6 +33,7 @@ class Session(object):
         self.domain = ""
         self.arch = ""
         self.realcwd = ""
+        self.encoder = ""
 
         self.ip = ip
         self.origin_ip = ip
@@ -63,7 +64,7 @@ class Session(object):
                 except UnicodeDecodeError:
                     data = data.decode('unicode-escape').split("~~~")
 
-            if len(data) != 7:
+            if len(data) != 9:
                 return False
 
             self.user = data[0]
@@ -97,6 +98,11 @@ class Session(object):
             if "(" in self.ip:
                 # example: 192.168.1.2(Preferred)
                 self.ip = self.ip.split("(")[0]
+            self.encoder = data[7].strip() if data[7].strip() else "1252"
+            self.shellchcp = data[8].strip() if data[8].strip() else "437"
+
+            self.realcwd = self.realcwd.encode('cp'+self.encoder).decode('cp'+self.shellchcp)
+
         except Exception as e:
             self.shell.print_warning("parsing error")
             self.shell.print_warning(repr(e))

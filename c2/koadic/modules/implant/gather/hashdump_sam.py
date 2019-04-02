@@ -146,7 +146,7 @@ class HashDumpSAMJob(core.job.Job):
                 self.syskey += tmp_syskey[i]
 
             try:
-                self.syskey.decode()
+                self.syskey.encode('ascii')
             except:
                 self.error("0", "There was a problem decoding the syskey. Try setting GETSYSHIVE to true and running again.", "Decode error", "")
                 return False

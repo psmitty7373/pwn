@@ -408,6 +408,57 @@ class Handler(BaseHTTPRequestHandler):
         return stdlib.encode()
 
     # ugly dragons, turn back
+    def scramble(self, data):
+        import string
+        import random
+        symbols = set()
+        data2 = data.replace(b"\n", b" ")
+        for symbol in data2.split(b" "):
+            if symbol.startswith(b'Koadic') and b'(' not in symbol and b')' not in symbol and b';' not in symbol:
+                symbols.add(symbol)
+
+        symbols = list(symbols)
+        symbols = sorted(symbols, key=lambda x: x.count(b'.'))
+
+        obnames = []
+
+        finalize = []
+        mapping = {}
+
+        for symindex, symbol in enumerate(symbols):
+            while True:
+                obname = ''.join(random.choice(string.ascii_uppercase) for _ in range(10)).encode()
+                if obname not in obnames:
+                    obnames.append(obname)
+                    break
+
+
+            fixed = []
+            basename = b""
+            foundyet = False
+            for part in symbol.split(b"."):
+                if not foundyet:
+                    if part in mapping:
+                        fixed.append(mapping[part])
+                    else:
+                        foundyet = True
+                        mapping[part] = obname
+                        fixed.append(obname)
+                        break
+                else:
+                    fixed.append(part)
+
+            new_name = b".".join(fixed)
+
+            tup = (symbol, new_name)
+            finalize.append(tup)
+
+        finalize = sorted(finalize, key=lambda x: (x[0].count(b"."), len(x[0])), reverse=True)
+        for final in finalize:
+            data = data.replace(final[0], final[1])
+
+        return data
+
     def post_process_script(self, script, template, stdlib=True):
         if stdlib:
             stdlib_content = self.options.get("_STDLIB_")
@@ -430,7 +481,7 @@ class Handler(BaseHTTPRequestHandler):
 
         # obfuscate the script!
         import string
-        script = script.replace(b"Koadic", ''.join(random.choice(string.ascii_uppercase) for _ in range(10)).encode())
+        script = self.scramble(script) # script.replace(b"Koadic", ''.join(random.choice(string.ascii_uppercase) for _ in range(10)).encode())
         '''
         import uuid
         jsfile = "/tmp/" + uuid.uuid4().hex
@@ -457,4 +508,9 @@ class Handler(BaseHTTPRequestHandler):
             script = jsmin(script.decode()).encode()
 
         script = template.replace(b"~SCRIPT~", script)
+        if self.session and self.session.encoder:
+            encoder = self.session.encoder
+        else:
+            encoder = "1252"
+        script = script.decode().encode("cp"+encoder)
         return script

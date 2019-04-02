@@ -99,7 +99,7 @@ class HashDumpDCJob(core.job.Job):
 
             self.print_status("received NTDS.DIT file (%d bytes)" % len(data))
             self.ntds_data = data
-            self.system_encoder = handler.get_header("encoder", False)
+            self.ntds_encoder = handler.get_header("encoder", False)
             return
 
         # dump ntds.dit here

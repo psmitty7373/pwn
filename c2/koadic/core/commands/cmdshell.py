@@ -44,6 +44,8 @@ def run_cmdshell(shell, session):
     old_state = shell.state
 
     old_zombie = plugin.options.get("ZOMBIE")
+    old_dir = plugin.options.get("DIRECTORY")
+    old_out = plugin.options.get("OUTPUT")
     old_cmd = plugin.options.get("CMD")
 
     id = str(session.id)
@@ -56,6 +58,8 @@ def run_cmdshell(shell, session):
         shell.prompt = get_prompt(shell, id, ip, emucwd, True)
         shell.clean_prompt = get_prompt(shell, id, ip, emucwd, False)
         plugin.options.set("ZOMBIE", id)
+        plugin.options.set("DIRECTORY", "%TEMP%")
+        plugin.options.set("OUTPUT", "true")
 
         try:
             import readline
@@ -138,7 +142,9 @@ def run_cmdshell(shell, session):
             return
         finally:
             plugin.options.set("ZOMBIE", old_zombie)
-            plugin.options.set("cmd", old_cmd)
+            plugin.options.set("CMD", old_cmd)
+            plugin.options.set("DIRECTORY", old_dir)
+            plugin.options.set("OUTPUT", old_out)
 
             shell.prompt = old_prompt
             shell.clean_prompt = old_clean_prompt
