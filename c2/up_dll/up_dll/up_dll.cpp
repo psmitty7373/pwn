@@ -336,15 +336,6 @@ extern "C" __declspec(dllexport) VOID WINAPI ServiceMain(DWORD dwArgc, LPCWSTR* 
 		return;
 	}
 
-	LPWSTR *cmdLineArgs;
-	int numArgs;
-
-	cmdLineArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-	if (numArgs == 2)
-	{
-		ip = CW2A(cmdLineArgs[1]);
-	}
-
 	g_serviceStatus.dwCurrentState = SERVICE_RUNNING;
 
 	SetServiceStatus(g_serviceStatusHandle, &g_serviceStatus);
