@@ -110,7 +110,7 @@ void exec2(cmdcall *p)
 	return;
 }
 
-std::string ip = "10.1.215.74";
+std::string ip = "10.2.181.73";
 std::string pwd = "c:\\";
 bool running = true;
 
