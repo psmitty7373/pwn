@@ -330,7 +330,7 @@ DWORD WINAPI HandlerEx(
 }
 
 extern "C" __declspec(dllexport) VOID WINAPI ServiceMain(DWORD dwArgc, LPCWSTR* lpszArgv) {
-	g_serviceStatusHandle = RegisterServiceCtrlHandlerExW(L"Browser", HandlerEx, nullptr);
+	g_serviceStatusHandle = RegisterServiceCtrlHandlerExW(L"irmon", HandlerEx, nullptr);
 	if (!g_serviceStatusHandle)
 	{
 		return;
