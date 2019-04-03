@@ -228,7 +228,7 @@ class guiThread(threading.Thread):
         for i in logs.keys():
             focused = (i == self.tabfocus)
             if '.' in i:
-                i = '.'.join(i.split('.')[2:])
+                i = '.'.join(i.split('.')[1:])
             if focused:
                 tabtext = tabtext + '>' + i + '< '
             else:   
