@@ -9,7 +9,6 @@
 #include <string>
 #include <fstream>
 #include <stdexcept>
-#include <atlstr.h>
 
 #include "up_dll.h"
 
